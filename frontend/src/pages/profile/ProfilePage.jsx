@@ -31,6 +31,7 @@ const ProfilePage = () => {
     followers: ["1", "2", "3"],
   };
 
+
   const handleImgChange = (e, state) => {
     const file = e.target.files[0];
     if (file) {
@@ -188,7 +189,7 @@ const ProfilePage = () => {
               {feedType==="likes" && (<div className="bg-primary w-15 h-1 rounded-full absolute bottom-0"></div>)}
             </div>
           </div>
-          {feedType==="posts" && (<Posts/>)}
+          {feedType==="posts" && (<Posts feedType={""}/>)}
         </div>
       )}
     </div>

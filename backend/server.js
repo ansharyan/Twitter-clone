@@ -19,13 +19,13 @@ const app = express();
 const PORT=process.env.PORT || 8000;
 const MONGO_URI = process.env.MONGO_URI;
 
-app.use(express.json()); // to parse req.body
+app.use(express.json({limit: "5mb"})); // to parse req.body
 app.use(express.urlencoded({extended:true})); //to parse form data url encoded
 
 app.use(cookieParser());  //to get cookies
 app.use("/api/auth", authRouter);
 app.use('/api/user', userRouter);
-app.use("/api/post", postRouter);
+app.use("/api/posts", postRouter);
 app.use("/api/notifications", notificationRouter)
 
 const connectdb = async () =>{

@@ -1,12 +1,39 @@
 import React, { useState } from "react";
 import XSvg from "../../components/svgs/X";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const LogIn = () => {
 
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     password: "",
     username: ""
+  })
+
+  const {mutate, isPending, isError ,error} = useMutation({
+    mutationFn: async ({username, password}) =>{
+      try {
+        const res = await fetch("/api/auth/login", {
+          method:"POST",
+          headers:{
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({password, username}),
+        });
+
+        const data = await res.json();
+        if(!res.ok){
+          throw new Error(data.error || "Something went wrong");
+        }
+      } catch (error) {
+        throw error;
+      }
+    }, onSuccess: () =>{
+      queryClient.invalidateQueries({queryKey: ["authUser"]});
+      toast.success("Logged In Successfully😊");
+    }
   })
 
   const handleInputChange = (e) =>{
@@ -15,10 +42,9 @@ const LogIn = () => {
 
   const handleSignIn = (e) => {
     e.preventDefault();
-    console.log(formData);
+    mutate(formData);
   }
 
-  let isError = false;
 
   return (
     <div className="flex max-w-screen-xl mx-auto h-screen px-10">
@@ -55,8 +81,8 @@ const LogIn = () => {
             </svg>
             <input type="password" className="grow" placeholder="Password" name="password" value={formData.password}  onChange={handleInputChange}/>
           </label>
-          <button className="btn btn-primary rounded-full" onClick={handleSignIn}> Log In</button>
-          {isError && <p className="text-red-500">Something went wrong!</p>}
+          <button className="btn btn-primary rounded-full" onClick={handleSignIn}> {isPending? "Logging" : "Log In"}</button>
+          {isError && <p className="text-red-500">{error.message}</p>}
         </form>
         <div className="flex flex-col  lg:w-2/3 md:mx-20 gap-2 mt-4">
           <p>Don't have an account?</p>

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import XSvg from "../../components/svgs/X";
 import {MdDriveFileRenameOutline} from "react-icons/md"
 import { Link } from "react-router-dom";
+import {useMutation} from "@tanstack/react-query"
+import toast from "react-hot-toast";
 
 const SignUp = () => {
 
@@ -12,16 +14,38 @@ const SignUp = () => {
     username: ""
   })
 
+  const {mutate, isError, isPending, error} =  useMutation({
+    mutationFn: async({email, fullName, password, username}) => {
+      try {
+        const res = await fetch("/api/auth/signup", {
+          method:"POST",
+          headers:{
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({email, password, fullName,username}),
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error || "Something went wrong");
+        
+        return data;
+      } catch (error) {
+        throw error;
+      }
+    },
+    onSuccess: (data) =>{
+      toast.success("Account created Successfully");
+    }
+  })
+
   const handleInputChange = (e) =>{
     setFormData({...formData, [e.target.name]: e.target.value});
   }
 
   const handleSignUp = (e) => {
     e.preventDefault();
-    console.log(formData);
+    mutate(formData);
   }
 
-  let isError = false;
 
   return (
     <div className="flex max-w-screen-xl mx-auto h-screen px-10">
@@ -74,8 +98,8 @@ const SignUp = () => {
             </svg>
             <input type="password" className="grow" placeholder="Password" name="password" value={formData.password}  onChange={handleInputChange}/>
           </label>
-          <button className="btn btn-primary rounded-full" onClick={handleSignUp}> Sign Up</button>
-          {isError && <p className="text-red-500">Something went wrong!</p>}
+          <button className="btn btn-primary rounded-full" onClick={handleSignUp}> {isPending? "Loading..." : "Sign Up"}</button>
+          {isError && <p className="text-red-500">{error.message}</p>}
         </form>
         <div className="flex flex-col  lg:w-2/3 md:mx-20 gap-2 mt-4">
           <p>Already have an account?</p>
