@@ -1,10 +1,32 @@
 import React from "react";
 import RightPanelSkeleton from "../skeletons/RightPanelSkeleton";
-import { USERS_FOR_RIGHT_PANEL } from "../../utils/db/dummy.js";
 import { Link } from "react-router-dom";
+import { useQuery } from '@tanstack/react-query';
+
 
 export default function RightPanel() {
-  let isLoading = false;
+
+  const {data: usersForRightPanel, isLoading} = useQuery({
+    queryKey: ["suggestedUsers"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/user/suggested");
+        const data = await res.json();
+        if(!res.ok){
+          throw new Error(data.message);
+        } 
+        
+        return data;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
+  })
+
+  if(usersForRightPanel?.length === 0){
+    return <div className="md:w-64 w-0"></div>
+  }
+  
   return (
     <div className="hidden lg:block m-4 sticky top-2">
       <div className="bg-[#16181C] rounded-md p-4 border-1 border-gray-700">
@@ -19,7 +41,7 @@ export default function RightPanel() {
             </>
           )}
           {!isLoading &&
-            USERS_FOR_RIGHT_PANEL?.map((user) => (
+            usersForRightPanel?.map((user) => (
               <Link
                 to={`/profile/${user.username}`}
                 className="flex items-center justify-between gap-4"
@@ -28,7 +50,7 @@ export default function RightPanel() {
                 <div className="flex gap-2 items-center">
                   <div className="avatar">
                     <div className="w-8 rounded-full">
-                      <img src={user.profileImg || "/avatar-placeholder.png"} />
+                      <img src={user.profileImg || "/avatars/avatar-placeholder.png"} />
                     </div>
                   </div>
                   <div className="flex flex-col">
