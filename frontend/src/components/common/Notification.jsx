@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 
 export default function Notification({ notification }) {
   console.log(notification);
+  
   return (
     <div className="border-b border-gray-700">
       <div className="flex gap-2 p-4">

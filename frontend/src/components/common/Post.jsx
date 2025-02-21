@@ -16,7 +16,7 @@ export default function Post({ post }) {
 
   const {data:authUser} = useQuery({queryKey: ["authUser"]});
 
-  const{mutate:deletePost,isPending,} = useMutation({
+  const{mutate:deletePost,isPending:isDeleting} = useMutation({
     mutationFn: async () =>{
       try {
         const res = await fetch(`/api/posts/${post._id}`,{
@@ -37,9 +37,38 @@ export default function Post({ post }) {
       queryClient.invalidateQueries({queryKey : ["posts"]})
     }
   })
+  const isLiked = post.likes.includes(authUser?._id);
+  const {mutate:likePost, isPending:isLiking } = useMutation({
+    mutationFn: async () =>{
+      try {
+        const res = await fetch(`/api/posts/like/${post._id}`,{
+          method: "POST",
+        })
+        const data = await res.json();
+
+        if(!res.ok){
+          throw new Error(data.error);
+        }
+        return data;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },onSuccess: (updatedLikes) =>{
+      // queryClient.invalidateQueries({queryKey: ["posts"]});
+
+      queryClient.setQueryData(["posts"], (oldData) =>{
+        return oldData.map((oldPost) =>{
+          if(oldPost._id === post._id){
+            return {...oldPost, likes: updatedLikes};
+          }
+          return oldPost;
+        })
+      })
+    }
+  })
 
     const postOwner = post.user;
-    const isLiked = false;
+    
   
     const isMyPost = authUser?._id === post.user._id;
   
@@ -55,7 +84,10 @@ export default function Post({ post }) {
         e.preventDefault();
     };
   
-    const handleLikePost = () => {};
+    const handleLikePost = () => {
+      if(isLiking) return;
+      likePost();
+    };
 
   return (
     <>
@@ -80,12 +112,12 @@ export default function Post({ post }) {
             </div>
             {isMyPost && (
               <span className="flex justify-end flex-1">
-                {!isPending && <FaTrash
+                {!isDeleting && <FaTrash
                   className="cursor-pointer hover:text-red-500"
                   onClick={handleDeletePost}
                 />}
 
-                {isPending && (<LoadingSpinner size="sm"/>)}
+                {isDeleting && (<LoadingSpinner size="sm"/>)}
               </span>
             )}
             {!isMyPost && (
@@ -192,16 +224,17 @@ export default function Post({ post }) {
               className="flex gap-1 items-center group cursor-pointer"
               onClick={handleLikePost}
             >
-              {!isLiked && (
+              {isLiking && (<LoadingSpinner size="sm"/>)}
+              {!isLiked && !isLiking && (
                 <FaRegHeart className="w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500" />
               )}
-              {isLiked && (
+              {isLiked && !isLiking && (
                 <FaRegHeart className="w-4 h-4 cursor-pointer text-pink-500" />
               )}
 
               <span
-                className={`text-sm text-slate-500 group-hover:text-pink-500 ${
-                  isLiked ? "text-pink-500" : ""
+                className={`text-sm  group-hover:text-pink-500 ${
+                  isLiked ? "text-pink-500" : "text-slate-500"
                 }`}
               >
                 {post.likes.length}

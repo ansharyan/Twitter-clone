@@ -57,7 +57,9 @@ export const likeUnlikePost =async (req, res) =>{
 
             user.likedPosts.pull(postId);
             await user.save();
-            return res.status(200).json({message:"Post unliked!"})
+
+            const updatedLikes = post.likes;
+            return res.status(200).json(updatedLikes)
         }else{
             //likepost
             post.likes.push(userId);
@@ -72,8 +74,8 @@ export const likeUnlikePost =async (req, res) =>{
                 to: post.user,
             });
             await newNotification.save();
-
-            return res.status(200).json({ message:"Post Liked!"})
+            const updatedLikes = post.likes;
+            return res.status(200).json(updatedLikes)
         }
     } catch (error) {
         res.status(500).json({error: error.message});
