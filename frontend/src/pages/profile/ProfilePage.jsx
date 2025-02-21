@@ -1,35 +1,41 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ProfileHeaderSkeleton from "../../components/skeletons/ProfileHeaderSkeleton";
 import { FaArrowLeft, FaLink } from "react-icons/fa6";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { POSTS } from "../../utils/db/dummy";
 import { MdEdit } from "react-icons/md";
 import { IoCalendarOutline } from "react-icons/io5";
 import Posts from "../../components/common/Posts";
 import EditProfileModal from "./EditProfileModal";
+import { useQuery } from "@tanstack/react-query";
+import { formatMemberSinceDate } from "../../utils/db/date";
 
 const ProfilePage = () => {
   const [coverImg, setCoverImg] = useState(null);
   const [profileImg, setProfileImg] = useState(null);
-  const [feedType, setFeedType] = useState("posts");
+  const [feedType, setFeedType] = useState("userPosts");
 
   const coverImgRef = useRef(null);
   const profileImgRef = useRef(null);
 
-  let isLoading = false;
   let isMyProfile = true;
+  const {username} = useParams();
 
-  const user = {
-    _id: "1",
-    fullName: "John Doe",
-    username: "johndoe",
-    profileImg: "/avatars/boy.png",
-    coverImg: "/posts/post2.png",
-    bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    link: "https://youtube.com/@asaprogrammer_",
-    following: ["1", "2", "3"],
-    followers: ["1", "2", "3"],
-  };
+  const {data:user, isLoading, refetch, isRefetching} = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      try {
+        const res = await fetch(`/api/user/profile/${username}`);
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong");
+        }
+        return data;
+      } catch (error) {
+        throw new Error(error);
+    }
+  }
+  })
 
 
   const handleImgChange = (e, state) => {
@@ -43,13 +49,17 @@ const ProfilePage = () => {
       reader.readAsDataURL(file);
     }
   };
+
+  useEffect(()=>{
+    refetch();
+  },[username,refetch])
   return (
     <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen">
-      {isLoading && <ProfileHeaderSkeleton />}
-      {!isLoading && !user && (
+      {(isLoading || isRefetching) && <ProfileHeaderSkeleton />}
+      {!isLoading && !isRefetching && !user && (
         <p className="text-center text-lg mt-4">User not found</p>
       )}
-      {!isLoading && user && (
+      {!isLoading && !isRefetching && user && (
         <div className="flex flex-col">
           {/* header */}
           <div className="flex items-center gap-10 py-2 px-4">
@@ -159,37 +169,37 @@ const ProfilePage = () => {
                       rel="noreferrer"
                       className=" text-blue-500 hover:underline"
                     >
-                      youtube.com/@asaprogrammer_
+                      {user?.link}
                     </a>
                   </>
                 </div>
               )}
               <div className="flex gap-1 items-center">
                 <IoCalendarOutline className='w-4 h-4 text-gray-600' />
-                <p className="text-gray-600">Joined July 2021</p>
+                <p className="text-gray-600">{formatMemberSinceDate(user?.createdAt)}</p>
               </div>
             </div>
 
             {/* Followers and Follwoing */}
             <div className="flex gap-2">
-              <span className="flex gap-1 items-center"><p className="font-bold">{user.following.length}</p><p className="text-gray-600">Following</p></span>
-              <span className="flex gap-1 items-center"><p className="font-bold">{user.followers.length}</p><p className="text-gray-600">Followers</p></span>
+              <span className="flex gap-1 items-center"><p className="font-bold">{user?.following.length}</p><p className="text-gray-600">Following</p></span>
+              <span className="flex gap-1 items-center"><p className="font-bold">{user?.follower.length}</p><p className="text-gray-600">Followers</p></span>
             </div>
             
           </div>
 
           {/* FeedType */}
           <div className="border-b-1 border-gray-700 flex justify-around mt-5 text-lg cursor-pointer relative">
-            <div className="p-3 flex flex-col items-center w-full hover:bg-secondary transition duration-200" onClick={()=> {setFeedType("posts")}}>
+            <div className="p-3 flex flex-col items-center w-full hover:bg-secondary transition duration-200" onClick={()=> {setFeedType("userPosts")}}>
               Posts
-              {feedType==="posts" && (<div className="bg-primary w-15 h-1 rounded-full absolute bottom-0"></div>)}
+              {feedType==="userPosts" && (<div className="bg-primary w-15 h-1 rounded-full absolute bottom-0"></div>)}
             </div>
             <div className="p-3 flex flex-col items-center w-full text-slate-500 hover:bg-secondary transition duration-200" onClick={()=> {setFeedType("likes")}}>
               Likes
               {feedType==="likes" && (<div className="bg-primary w-15 h-1 rounded-full absolute bottom-0"></div>)}
             </div>
           </div>
-          {feedType==="posts" && (<Posts feedType={""}/>)}
+           <Posts feedType={feedType} username={username} userId={user?._id}/>
         </div>
       )}
     </div>

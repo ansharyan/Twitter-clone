@@ -3,12 +3,16 @@ import PostSkeleton from '../skeletons/PostsSkeleton'
 import Post from './Post.jsx';
 import { useQuery } from '@tanstack/react-query';
 
-export default function Posts({feedType}) {
+export default function Posts({feedType, username, userId}) {
 
 
   const getPostEndPoint = () =>{
     if(feedType === "following"){
       return "/api/posts/following";
+    }else if(feedType === "userPosts"){
+      return `/api/posts/user/${username}`;
+    }else if(feedType === "likes"){
+      return `/api/posts/likedPosts/${userId}`;
     }else {
       return "/api/posts/all";
     }
@@ -26,11 +30,10 @@ export default function Posts({feedType}) {
 			try {
 				const res = await fetch(POST_ENDPOINT);
 				const data = await res.json();
-
 				if (!res.ok) {
 					throw new Error(data.error || "Something went wrong");
 				}
-				return data.posts || [];
+				return data|| [];
 			} catch (error) {
 				throw new Error(error);
 			}

@@ -143,7 +143,7 @@ export const getAllPosts = async (req,res) =>{
             return res.status(200).json({message: "No Post Available"});
         }
 
-        return res.status(200).json({posts});
+        return res.status(200).json(posts);
     } catch (error) {
         return res.status(500).json({error: error.message});
     }
@@ -170,7 +170,7 @@ export const getAllLikedPosts = async (req, res) =>{
         return res.status(200).json(likedPosts);
 
     } catch (error) {
-        res.status(500),json({error: error.message});
+        res.status(500).json({error: error.message});
     }
 }
 
@@ -202,7 +202,7 @@ export const getUserPosts = async (req, res) =>{
         const {username} = req.params;
         const user = await User.findOne({username});
         if(!user){
-            res.status(404).json({error: "User Not found!"});
+            return res.status(404).json({error: "User Not found!"});
         }
 
         const posts = await Post.find({user: user._id}).sort({createdAt: -1})
