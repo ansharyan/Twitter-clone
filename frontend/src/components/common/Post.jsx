@@ -155,7 +155,7 @@ export default function Post({ post }) {
           </div>
           {/* CAPTION PANEL */}
           <div className="">
-            <span>{post.text}</span>
+            <span className="whitespace-pre-wrap">{post.text}</span>
           </div>
           {/* POST IMAGE */}
           <div className="border-1 rounded-lg border-gray-700">

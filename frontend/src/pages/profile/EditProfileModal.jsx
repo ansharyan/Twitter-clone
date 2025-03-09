@@ -1,20 +1,50 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
+import {useMutation, useQuery} from "@tanstack/react-query";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import toast from "react-hot-toast";
+import useUpdateProfile from "../../hooks/useUpdateProfile";
 
-export default function EditProfileModal() {
+export default function EditProfileModal({authUser}) {
   const [formData, setFormData] = useState({
 		fullName: "",
 		username: "",
 		email: "",
 		bio: "",
-		link: "",
+		link:  "",
 		newPassword: "",
 		currentPassword: "",
 	});
 
+	useEffect(() => {
+		if (authUser) {
+			setFormData({
+				fullName: authUser.fullName,
+				username: authUser.username,
+				email: authUser.email,
+				bio: authUser.bio,
+				link: authUser.link,
+				newPassword: "",
+				currentPassword: ""
+			});
+		}
+	}, [authUser]);
+
   const handleInputChange = (e) =>{
     setFormData ({...formData, [e.target.name]:[e.target.value]});
   }
+
+  const {updateProfile, isUpdating} = useUpdateProfile();
+  const handleUpdateProfile= async(e) =>{
+	e.preventDefault();
+	if(isUpdating) return;
+	formData.bio = formData.bio.toString() || "";
+	formData.link = formData.link.toString() || "";
+	formData.newPassword = formData.newPassword.toString() || "";
+	formData.currentPassword = formData.currentPassword.toString() || "";
+	await updateProfile(formData);
+  }
+
   return (
     <div className="">
       <button
@@ -28,10 +58,7 @@ export default function EditProfileModal() {
 					<h3 className='font-bold text-lg my-3'>Update Profile</h3>
 					<form
 						className='flex flex-col gap-4'
-						onSubmit={(e) => {
-							e.preventDefault();
-							alert("Profile updated successfully");
-						}}
+						onSubmit={handleUpdateProfile}
 					>
 						<div className='flex flex-wrap gap-2'>
 							<input
@@ -94,11 +121,11 @@ export default function EditProfileModal() {
 							name='link'
 							onChange={handleInputChange}
 						/>
-						<button className='btn btn-primary rounded-full btn-sm text-white'>Update</button>
+						<button className='btn btn-primary rounded-full btn-sm text-white'>{isUpdating? <LoadingSpinner size="sm"/>:"Update"}</button>
 					</form>
 				</div>
 				<form method='dialog' className='modal-backdrop'>
-					<button className='outline-none'>close</button>
+					<button className='outline-none'>Close</button>
 				</form>
 			</dialog>
     </div>

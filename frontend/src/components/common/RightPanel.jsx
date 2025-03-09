@@ -14,7 +14,7 @@ export default function RightPanel() {
         const res = await fetch("/api/user/suggested");
         const data = await res.json();
         if(!res.ok){
-          throw new Error(data.message);
+          throw new Error(data.error);
         } 
         
         return data;

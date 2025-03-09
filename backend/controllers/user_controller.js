@@ -63,7 +63,7 @@ export const followUnfollowUser = async (req, res) =>{
             //unfollow
             await User.findByIdAndUpdate(id, {$pull : {follower: req.user._id}});
             await User.findByIdAndUpdate(req.user._id, {$pull :{ following: id}});
-            res.status(200).json({message: "User Unfollowed successfully"});
+            res.status(200).json({message: "User Unfollowed!"});
         }else{
             //follow
             await User.findByIdAndUpdate(id, {$push : {follower: req.user._id}});
@@ -76,7 +76,7 @@ export const followUnfollowUser = async (req, res) =>{
             })
             await newNotification.save();
 
-            res.status(200).json({messsage: "User Followed successfully"});
+            res.status(200).json({message: "User Followed!"});
         }
     } catch (error) {
         res.status(500).json({error: error.message});
@@ -84,8 +84,7 @@ export const followUnfollowUser = async (req, res) =>{
 }
 
 export const updateProfile = async (req, res) =>{
-    console.log("Update profile")
-    const {fullName, username, email, bio, link, currentPassword, newPassword, profileImg, coverImg} = req.body;
+    let {fullName, username, email, bio, link, currentPassword, newPassword, profileImg, coverImg} = req.body;
     const userId = req.user._id;
     try {
         const user = await User.findById(userId);

@@ -4,7 +4,6 @@ import { FaHeart } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 
 export default function Notification({ notification }) {
-  console.log(notification);
   
   return (
     <div className="border-b border-gray-700">

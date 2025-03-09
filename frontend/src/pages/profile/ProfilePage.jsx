@@ -7,10 +7,16 @@ import { MdEdit } from "react-icons/md";
 import { IoCalendarOutline } from "react-icons/io5";
 import Posts from "../../components/common/Posts";
 import EditProfileModal from "./EditProfileModal";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatMemberSinceDate } from "../../utils/db/date";
+import useFollow from "../../hooks/useFollow";
+import useUpdateProfile from "../../hooks/useUpdateProfile";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import toast from "react-hot-toast";
+import { set } from "mongoose";
 
 const ProfilePage = () => {
+  const queryClient = useQueryClient();
   const [coverImg, setCoverImg] = useState(null);
   const [profileImg, setProfileImg] = useState(null);
   const [feedType, setFeedType] = useState("userPosts");
@@ -18,11 +24,13 @@ const ProfilePage = () => {
   const coverImgRef = useRef(null);
   const profileImgRef = useRef(null);
 
-  let isMyProfile = true;
   const {username} = useParams();
 
+  const {follow, isPending} = useFollow();
+  const {updateProfile, isUpdating} = useUpdateProfile();
+
   const {data:user, isLoading, refetch, isRefetching} = useQuery({
-    queryKey: ["user"],
+    queryKey: ["profileUser"],
     queryFn: async () => {
       try {
         const res = await fetch(`/api/user/profile/${username}`);
@@ -36,7 +44,7 @@ const ProfilePage = () => {
     }
   }
   })
-
+  const {data:authUser} = useQuery({queryKey: ["authUser"]})
 
   const handleImgChange = (e, state) => {
     const file = e.target.files[0];
@@ -50,9 +58,21 @@ const ProfilePage = () => {
     }
   };
 
+  const handleImageUpdate= async(e) =>{
+    if(isUpdating) return;
+    await updateProfile({coverImg, profileImg});
+    setCoverImg(null);
+    setProfileImg(null);
+  }
+
   useEffect(()=>{
     refetch();
   },[username,refetch])
+
+
+  const isMyProfile = authUser?.username === username;
+  const follows = authUser?.following.includes(user?._id);
+
   return (
     <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen">
       {(isLoading || isRefetching) && <ProfileHeaderSkeleton />}
@@ -129,21 +149,24 @@ const ProfilePage = () => {
               </div>
             </div>
           </div>
-          {/* Edit Button */}
+          {/* Edit Button and Follow*/}
           <div className="flex justify-end px-4 mt-5 gap-2">
-            {isMyProfile && (<EditProfileModal/>)}
+            {isMyProfile && (<EditProfileModal authUser={authUser}/>)}
             {!isMyProfile && (
-              <button className="btn bg-white text-black px-5 rounded-full">
-                {" "}
-                Follow
+              <button className="btn bg-white text-black px-5 rounded-full" onClick={() =>{
+                follow(user._id);
+              }}>
+                {isPending && <LoadingSpinner size="sm"/>}
+                {!isPending && follows && "Unfollow"}
+                {!isPending && !follows && "Follow"}
               </button>
             )}
             {(coverImg || profileImg) && (
               <button
                 className="btn bg-white text-black px-5 rounded-full"
-                onClick={() => alert("Profile updated successfully")}
+                onClick={handleImageUpdate}
               >
-                Update
+                {isUpdating? "Updating" :"Update"}
               </button>
             )}
           </div>
@@ -154,7 +177,7 @@ const ProfilePage = () => {
             <div className="flex flex-col">
               <p className="font-bold text-xl text-white">{user?.fullName}</p>
               <p className="text-gray-600">@{user?.username}</p>
-              <p className="mt-2">{user?.bio}</p>
+              <p className="mt-2 whitespace-pre-wrap" >{user?.bio}</p>
             </div>
 
             {/* Link && Joined */}
