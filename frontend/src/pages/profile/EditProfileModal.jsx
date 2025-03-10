@@ -38,6 +38,8 @@ export default function EditProfileModal({authUser}) {
   const handleUpdateProfile= async(e) =>{
 	e.preventDefault();
 	if(isUpdating) return;
+	formData.fullName = formData.fullName.toString() || "";
+	formData.email = formData.email.toString() || "";
 	formData.bio = formData.bio.toString() || "";
 	formData.link = formData.link.toString() || "";
 	formData.newPassword = formData.newPassword.toString() || "";
@@ -76,6 +78,7 @@ export default function EditProfileModal({authUser}) {
 								value={formData.username}
 								name='username'
 								onChange={handleInputChange}
+								disabled
 							/>
 						</div>
 						<div className='flex flex-wrap gap-2'>
