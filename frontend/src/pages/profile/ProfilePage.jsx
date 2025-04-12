@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import ProfileHeaderSkeleton from "../../components/skeletons/ProfileHeaderSkeleton";
 import { FaArrowLeft, FaLink } from "react-icons/fa6";
 import { Link, useParams } from "react-router-dom";
-import { POSTS } from "../../utils/db/dummy";
+// import { POSTS } from "../../utils/db/dummy";
 import { MdEdit } from "react-icons/md";
 import { IoCalendarOutline } from "react-icons/io5";
 import Posts from "../../components/common/Posts";
@@ -14,6 +14,7 @@ import useUpdateProfile from "../../hooks/useUpdateProfile";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import toast from "react-hot-toast";
 import { set } from "mongoose";
+import ProfileHeader from "../../components/common/ProfileHeader";
 
 const ProfilePage = () => {
   const queryClient = useQueryClient();
@@ -82,17 +83,7 @@ const ProfilePage = () => {
       {!isLoading && !isRefetching && user && (
         <div className="flex flex-col">
           {/* header */}
-          <div className="flex items-center gap-10 py-2 px-4">
-            <Link to="/" className="p-2 hover:bg-gray-800 rounded-full">
-              <FaArrowLeft className="w-4 h-4" />
-            </Link>
-            <div className="">
-              <p className="text-xl font-bold">{user.fullName}</p>
-              <span className="text-sm text-gray-600">
-                {POSTS?.length} posts
-              </span>
-            </div>
-          </div>
+          <ProfileHeader user={user} page="profile" />
 
           {/* Cover Image  && Profile Image*/}
           <div className="relative group/cover">
@@ -205,8 +196,8 @@ const ProfilePage = () => {
 
             {/* Followers and Follwoing */}
             <div className="flex gap-2">
-              <span className="flex gap-1 items-center"><p className="font-bold">{user?.following.length}</p><p className="text-gray-600">Following</p></span>
-              <span className="flex gap-1 items-center"><p className="font-bold">{user?.follower.length}</p><p className="text-gray-600">Followers</p></span>
+              <Link to={`/follow/${username}/following`} className="flex gap-1 items-center hover:underline cursor-pointer"><p className="font-bold">{user?.following.length}</p><p className="text-gray-600">Following</p></Link>
+              <Link to={`/follow/${username}/followers`} className="flex gap-1 items-center hover:underline cursor-pointer"><p className="font-bold">{user?.follower.length}</p><p className="text-gray-600">Followers</p></Link>
             </div>
             
           </div>

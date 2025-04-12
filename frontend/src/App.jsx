@@ -4,6 +4,7 @@ import SignUp from "./pages/auth/SignUp.jsx";
 import HomePage from "./pages/home/HomePage.jsx";
 import NotificationPage from "./pages/notifications/NotificationPage.jsx";
 import ProfilePage from "./pages/profile/ProfilePage.jsx";
+import FollowList from "./pages/follow/FollowList.jsx";
 
 import Sidebar from "./components/common/Sidebar.jsx";
 import RightPanel from "./components/common/RightPanel.jsx";
@@ -46,7 +47,8 @@ function App() {
         <Route path="/login" element= {!authUser ? <LogIn/> : <Navigate to={"/"} />}/>
         <Route path="/signup" element={!authUser ? <SignUp/> : <Navigate to={"/"} />}/>
         <Route path="/notifications" element={authUser ? <NotificationPage/> : <Navigate to={"/login"} />}/>
-        <Route path="/profile/:username" element={authUser ? <ProfilePage/> : <Navigate to={"/login"} />}/>
+        <Route path="/profile/:username/" element={authUser ? <ProfilePage/> : <Navigate to={"/login"} />}/>
+        <Route path="/follow/:username/:feed" element={authUser ? <FollowList/> : <Navigate to={"/login"} />}/>
       </Routes>
       {authUser? <RightPanel/> : null}
       <Toaster/>

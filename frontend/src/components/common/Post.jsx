@@ -120,7 +120,7 @@ export default function Post({ post }) {
     <>
       <div className="flex p-4 gap-2 border-b border-gray-700">
         <div className="avatar">
-          <Link to={postOwner.profileImg} className="w-10 h-10 rounded-full overflow-hidden">
+          <Link to={`profile/${postOwner.username}`} className="w-10 h-10 rounded-full overflow-hidden">
             <img src={postOwner.profileImg || "/avatars/avatar-placeholder.png"} alt="PostImage" />
           </Link>
         </div>
@@ -128,11 +128,11 @@ export default function Post({ post }) {
           {/* USER PANEL */}
           <div className="flex justify-between">
             <div className="flex gap-2 items-center">
-              <Link to={""} className="font-bold">
+              <Link to={`profile/${postOwner.username}`} className="font-bold">
                 {postOwner.fullName}
               </Link>
               <span className="text-sm text-slate-500 flex gap-1">
-                <Link className="">@{postOwner.username}</Link>
+                <Link className="" to={`profile/${postOwner.username}`}>@{postOwner.username}</Link>
                 <span>·</span>
                 <span>{formattedDate}</span>
               </span>

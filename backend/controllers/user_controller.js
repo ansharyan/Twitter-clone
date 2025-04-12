@@ -147,7 +147,7 @@ export const updateProfile = async (req, res) =>{
 export const getFollowingUsers = async (req, res) =>{
     try {
         const {username} = req.params;
-        const followings = await User.findOne({username}).select("following");
+        const followings = await User.findOne({username}).select("following").populate("following");
         res.status(200).json(followings.following);
     } catch (error) {
         res.status(500).json({error: error.message});
@@ -157,7 +157,7 @@ export const getFollowingUsers = async (req, res) =>{
 export const getFollowers = async (req, res) =>{
     try {
         const {username} = req.params;
-        const followers = await User.findOne({username}).select("follower");
+        const followers = await User.findOne({username}).select("follower").populate("follower");
         res.status(200).json(followers.follower);
     } catch (error) {
         res.status(500).json({error: error.message});
